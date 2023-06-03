@@ -1,0 +1,17 @@
+{
+  "name": "contentful-copy-entry",
+  "version": "1.0.0",
+  "description": "Copy Contentful entries (and any linked entries/assets) from one environment to another",
+  "main": "index.js",
+  "bin": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Rob Sanchez",
+  "license": "MIT",
+  "dependencies": {
+    "contentful-management": "^10.35.6",
+    "lodash.isequal": "^4.5.0",
+    "yargs": "^17.7.2"
+  }
+}
