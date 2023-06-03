@@ -1,14 +1,22 @@
 {
   "name": "contentful-copy-entry",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Copy Contentful entries (and any linked entries/assets) from one environment to another",
   "main": "index.js",
   "bin": "index.js",
   "scripts": {
     "start": "node index.js"
   },
-  "author": "Rob Sanchez",
+  "author": "Rob Sanchez <info@robsanchez.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rsanchez/contentful-copy-entry.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rsanchez/contentful-copy-entry/issues"
+  },
+  "homepage": "https://github.com/rsanchez/contentful-copy-entry",
   "dependencies": {
     "contentful-management": "^10.35.6",
     "lodash.isequal": "^4.5.0",
