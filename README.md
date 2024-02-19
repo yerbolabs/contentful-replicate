@@ -5,18 +5,17 @@ Copy Contentful entries (and any linked entries/assets) from one environment to 
 ## Command
 
 ```
-npx contentful-copy-entry
+npm run start
 ```
 
 ## Options
 
 ```
-  -m, --management-token  Contentful Management API token    [string] [required]
+  -a, --access-token      Contentful Management API token    [string] [required]
   -s, --space             Space ID                           [string] [required]
-  -e, --entry             One or more Entry ID(s)             [array] [required]
+  -e, --entry             Entry ID                           [string] [required]
   -f, --from              Copy FROM this environment         [string] [required]
   -t, --to                Copy TO this environment           [string] [required]
-  -v, --verbose           Verbose logging                              [boolean]
   -h, --help              Show help                                    [boolean]
 ```
 
