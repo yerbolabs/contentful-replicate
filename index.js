@@ -9,30 +9,6 @@ const ora = require("ora");
 const contentful = require("contentful-management");
 
 /**
- * @typedef Options
- * @property {string} space
- * @property {string} accessToken
- * @property {string} from
- * @property {string} to
- * @property {string} entry
- */
-
-/** @type {Options} */
-let options;
-
-/** @type {contentful.ClientAPI} */
-let client;
-
-/** @type {contentful.Space} */
-let space;
-
-/** @type {contentful.Environment} */
-let fromEnvironment;
-
-/** @type {contentful.Environment} */
-let toEnvironment;
-
-/**
  * @param {number} ms
  * @returns {Promise<void>}
  */
@@ -84,11 +60,10 @@ async function copyEntry(entryId, parents=[]) {
     // console.log(fromEntry.fields);
 
     // for (const locale of locales.items) {
-        for (const fieldId of Object.keys(fromEntry.fields)) {
-            const field = fromEntry.fields[fieldId][locale.code];
+        for (const fieldId of Object.keys(fromEntryData.fields)) {
+            const field = fromEntryData.fields[fieldId][locale.code];
             // const field = fromEntry.fields[fieldId];
 
-            // @todo for each of this replace row?.sys.id with copied entry or asset id
 
             if (Array.isArray(field)) {
                 for (const row of field) {
@@ -96,14 +71,16 @@ async function copyEntry(entryId, parents=[]) {
                         row?.sys?.type === "Link" &&
                         row?.sys?.linkType === "Entry"
                     ) {
-                        await copyEntry(row?.sys.id, lineage);
+                        const { sys: { id } } = await copyEntry(row?.sys.id, lineage);
+                        row.sys.id = id;
                     }
 
                     if (
                         row?.sys?.type === "Link" &&
                         row?.sys?.linkType === "Asset"
                     ) {
-                        await copyAsset(row?.sys.id, lineage);
+                        const { sys: { id } } = await copyAsset(row?.sys.id, lineage);
+                        row.sys.id = id;
                     }
                 }
             } else {
@@ -111,14 +88,16 @@ async function copyEntry(entryId, parents=[]) {
                     field?.sys?.type === "Link" &&
                     field?.sys?.linkType === "Entry"
                 ) {
-                    await copyEntry(field?.sys.id, lineage);
+                    const { sys: { id } } = await copyEntry(field?.sys.id, lineage);
+                    field.sys.id = id;
                 }
 
                 if (
                     field?.sys?.type === "Link" &&
                     field?.sys?.linkType === "Asset"
                 ) {
-                    await copyAsset(field?.sys.id, lineage);
+                    const { sys: { id } } = await copyAsset(field?.sys.id, lineage);
+                    field.sys.id = id;
                 }
             }
         }
