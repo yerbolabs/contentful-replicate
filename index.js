@@ -44,7 +44,6 @@ async function copyEntry(entryId, parents=[]) {
     const lineage = [...parents, entryId];
     const breadcrumb = chalk.italic.gray(`(${R.join(' → ', lineage)})`);
 
-    // spinner.prefixText = chalk.gray(`   (${R.join(' → ', lineage)})`) + '\n';
     spinner.start(dedent`
         ${breadcrumb}
         ${`\u00a0\u00a0Fetching entry...`}
@@ -57,13 +56,8 @@ async function copyEntry(entryId, parents=[]) {
     /** @type contentful.Entry */
     let toEntry;
 
-    // console.log(fromEntry.fields);
-
-    // for (const locale of locales.items) {
         for (const fieldId of Object.keys(fromEntryData.fields)) {
             const field = fromEntryData.fields[fieldId][locale.code];
-            // const field = fromEntry.fields[fieldId];
-
 
             if (Array.isArray(field)) {
                 for (const row of field) {
@@ -102,26 +96,11 @@ async function copyEntry(entryId, parents=[]) {
             }
         }
 
-        // toEntry = await toEnvironment.getEntry(entryId);
-
-        // const toEntryData = toEntry.toPlainObject();
-
-        // spinner.start(`Creating entry from entry ${chalk.magenta(entryId)}`);
         spinner.start(dedent`
             ${breadcrumb}
             ${`\u00a0\u00a0Creating entry...`}
         `);
 
-        // if (isEqual(toEntryData.fields, fromEntryData.fields)) {
-        //     log(`Existing entry ${entryId} has not changed, skipping`, depth);
-        //     return;
-        // }
-
-        // Object.assign(toEntry.fields, fromEntryData.fields);
-
-        // toEntry = await toEntry.update();
-
-        // toEntry = await toEnvironment.createEntryWithId(
         toEntry = await toEnvironment.createEntry(
             contentTypeId,
             {
@@ -131,26 +110,12 @@ async function copyEntry(entryId, parents=[]) {
             }
         );
 
-        // spinner.start(`Created entry from entry ${chalk.magenta(entryId)} as entry ${chalk.magenta(toEntry.sys.id)}`);
-        // spinner.succeed(`Created entry ${chalk.magenta(toEntry.sys.id)}`);
         spinner.succeed(dedent`
             ${breadcrumb}
             ${`\u00a0\u00a0Created entry ${chalk.magenta(toEntry.sys.id)}`}
         `);
 
-        // if (isPublished(fromEntry)) {
-        //     await sleep(50);
-
-        //     await toEntry.publish();
-        // }
-
-        // log(
-        //     `Saved entry https://app.contentful.com/spaces/${space.sys.id}/environments/${toEnvironment.sys.id}/entries/${entryId}`,
-        //     depth
-        // );
-
         return toEntry;
-    // }
 }
 
 /**
@@ -161,7 +126,6 @@ async function copyAsset(assetId, parents=[]) {
     const lineage = [...parents, assetId];
     const breadcrumb = chalk.italic.gray(`(${R.join(' → ', lineage)})`);
 
-    // spinner.start(`Fetching asset ${chalk.magenta(assetId)}`);
     spinner.start(dedent`
         ${breadcrumb}
         ${`\u00a0\u00a0Fetching asset...`}
@@ -173,20 +137,15 @@ async function copyAsset(assetId, parents=[]) {
     /** @type {contentful.Asset["fields"]["file"]} */
     const file = {};
 
-    // for (const locale of locales.items) {
-        const fromFile = fromAssetData.fields.file[locale.code];
-        // const fromFile = fromAssetData.fields.file;
-        if (fromFile) {
-            file[locale.code] = {
-            // file = {
-                fileName: fromFile.fileName,
-                contentType: fromFile.contentType,
-                upload: `https:${fromFile.url}`,
-            };
-        }
-    // }
+    const fromFile = fromAssetData.fields.file[locale.code];
+    if (fromFile) {
+        file[locale.code] = {
+            fileName: fromFile.fileName,
+            contentType: fromFile.contentType,
+            upload: `https:${fromFile.url}`,
+        };
+    }
 
-    // spinner.start(`Creating asset from asset ${chalk.magenta(assetId)}`);
     spinner.start(dedent`
         ${breadcrumb}
         ${`\u00a0\u00a0Creating asset...`}
@@ -205,18 +164,10 @@ async function copyAsset(assetId, parents=[]) {
 
     await sleep(50);
 
-    // spinner.start(`Created asset from asset ${chalk.magenta(assetId)} as asset ${chalk.magenta(toAsset.sys.id)}`);
     spinner.succeed(dedent`
         ${breadcrumb}
         ${`\u00a0\u00a0Created asset ${chalk.magenta(toAsset.sys.id)}`}
     `);
-
-    // toAsset = await toAsset.publish();
-
-    // log (
-    //     `Saved asset https://app.contentful.com/spaces/${space.sys.id}/environments/${toEnvironment.sys.id}/assets/${assetId}`,
-    //     depth
-    // );
 }
 
 const required = R.compose(
@@ -232,23 +183,16 @@ const required = R.compose(
 async function main() {
     args = minimist(process.argv.slice(2), {
       string: ['access-token', 'space', 'from', 'to', 'entry'],
-      boolean: ['verbose'],
       alias: {
         a: 'access-token',
         s: 'space',
         f: 'from',
         t: 'to',
         e: 'entry',
-        v: 'verbose',
-      },
-      default: {
-        verbose: false,
       },
     });
 
     // @todo pull environment variables
-
-    // console.log(args);
 
     options = R.map(
         R.when(RA.isString, R.trim)
@@ -288,8 +232,6 @@ async function main() {
         )
     );
 
-    // console.log(options);
-
     spinner = spinner.start(`Creating contentful client`);
 
     client = contentful.createClient({
@@ -299,19 +241,7 @@ async function main() {
     space = await client.getSpace(options.space);
     fromEnvironment = await space.getEnvironment(options.from);
     toEnvironment = await space.getEnvironment(options.to);
-    // locales = await fromEnvironment.getLocales();
     locale = { code: 'en-US' };
-
-    // console.log(dedent`
-    //     space   ${chalk.magenta(options.space)}
-    //     entry   ${chalk.magenta(options.entry)}
-    //     from    ${chalk.magenta(options.from)}
-    //     to      ${chalk.magenta(options.to)}
-    // `, '\n');
-
-    // return Promise.all(
-    //     options.entry.map(id => copyEntry(id))
-    // )
 
     const { sys: { id: entryId } } = await copyEntry(options.entry);
 
@@ -332,49 +262,3 @@ options = {};
 spinner = ora();
 
 main();
-
-// yargs(hideBin(process.argv))
-//     .env("CONTENTFUL")
-//     .command(
-//         "$0",
-//         "Copy Contentful entries (and any linked entries/assets) from one environment to another",
-//         (yargs) => yargs,
-//         (args) => main(/** @type {Options} */ (/** @type {unknown} */ (args)))
-//     )
-//     .option("management-token", {
-//         alias: "m",
-//         type: "string",
-//         description: "Contentful Management API token",
-//         demandOption: true,
-//     })
-//     .option("space", {
-//         alias: "s",
-//         type: "string",
-//         description: "Space ID",
-//         demandOption: true,
-//     })
-//     .option("entry", {
-//         alias: "e",
-//         type: "array",
-//         description: "One or more Entry ID(s)",
-//         demandOption: true,
-//     })
-//     .option("from", {
-//         alias: "f",
-//         type: "string",
-//         description: "Copy FROM this environment",
-//         demandOption: true,
-//     })
-//     .option("to", {
-//         alias: "t",
-//         type: "string",
-//         description: "Copy TO this environment",
-//         demandOption: true,
-//     })
-//     .option("verbose", {
-//         alias: "v",
-//         type: "boolean",
-//         description: "Verbose logging"
-//     })
-//     .alias('h', 'help')
-//     .parse();
