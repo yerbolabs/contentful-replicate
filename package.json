@@ -1,23 +1,21 @@
 {
-  "name": "contentful-copy-entry",
-  "version": "1.0.2",
-  "description": "Copy Contentful entries (and any linked entries/assets) from one environment to another",
+  "name": "contentful-replicate",
+  "version": "1.2.0",
+  "description": "Deep contentful entry replication command-line utility",
   "main": "index.js",
   "bin": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "type-check": "tsc --noEmit --allowJs --checkJs --skipLibCheck --lib ES2015 index.js"
+    "start": "node index.js"
   },
-  "author": "Rob Sanchez <info@robsanchez.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rsanchez/contentful-copy-entry.git"
+    "url": "https://github.com/yerbolabs/contentful-replicate.git"
   },
   "bugs": {
-    "url": "https://github.com/rsanchez/contentful-copy-entry/issues"
+    "url": "https://github.com/yerbolabs/contentful-replicate/issues"
   },
-  "homepage": "https://github.com/rsanchez/contentful-copy-entry",
+  "homepage": "https://github.com/yerbolabs/contentful-replicate",
   "dependencies": {
     "chalk": "^4.1.2",
     "contentful-management": "^10.35.6",
@@ -29,9 +27,5 @@
     "ramda": "^0.29.1",
     "ramda-adjunct": "^4.1.1",
     "regex-parser": "^2.3.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.2.5",
-    "typescript": "^5.1.3"
   }
 }
