@@ -2,7 +2,6 @@
 const R = require("ramda");
 const RA = require("ramda-adjunct");
 const ora = require("ora");
-const voca = require("voca");
 const chalk = require("chalk");
 const dedent = require("dedent");
 const inquirer = require("inquirer");
@@ -131,38 +130,21 @@ async function copyEntry(entryId, parents=[]) {
         }
     }
 
-// console.log(
-//     R.evolve({
-//         handle: R.map(replace),
-//         name: R.map(replace),
-//         title: R.map(replace),
-//         internalName: R.map(replace),
-//     }, {
-//         handle: { 'en-US': 'it-burnout-index-survey' },
-//         internalName : { 'en-US': 'IT Burnout Index Survey' },
-//         name: { 'en-US': 'IT Burnout Index' },
-//         title: { 'en-US': 'Burnout Index' },
-//         recurringPattern: {
-//           'en-US': { freq: 0, count: 0, dtstart: 'userFirstLogin', dtstartOffset: 0 }
-//         },
-//     })
-// );
+    toEntry = await toEnvironment.createEntry(
+        contentTypeId,
+        {
+            fields: {
+                ...fromEntryData.fields,
+            },
+        }
+    );
 
-        toEntry = await toEnvironment.createEntry(
-            contentTypeId,
-            {
-                fields: {
-                    ...fromEntryData.fields,
-                },
-            }
-        );
+    spinner.succeed(dedent`
+        ${breadcrumb}
+        ${`\u00a0\u00a0Created entry ${chalk.magenta(toEntry.sys.id)}`}
+    `);
 
-        spinner.succeed(dedent`
-            ${breadcrumb}
-            ${`\u00a0\u00a0Created entry ${chalk.magenta(toEntry.sys.id)}`}
-        `);
-
-        return toEntry;
+    return toEntry;
 }
 
 /**
@@ -242,9 +224,6 @@ async function main() {
     // @todo pull environment variables
 
     options = R.compose(
-        // R.map(
-        //     R.when(RA.isString, R.trim),
-        // ),
         R.evolve({
             space: R.trim,
             from: R.trim,
