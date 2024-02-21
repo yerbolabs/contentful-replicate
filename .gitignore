@@ -1,3 +1,27 @@
-package-lock.json
-node_modules/
-npm-debug.log
+# Dependencies
+**/node_modules/
+
+# Local Environment
+.env*
+!.env.example
+
+# Build directory
+.webpack
+.serverless
+
+# Husky
+.husky/_
+
+# Others
+**/npm-debug.log
+
+# IDE Specific
+.idea
+.vscode
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Mac
+.DS_Store
