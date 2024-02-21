@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 const R = require("ramda");
 const RA = require("ramda-adjunct");
+const ora = require("ora");
+const voca = require("voca");
 const chalk = require("chalk");
 const dedent = require("dedent");
 const inquirer = require("inquirer");
 const minimist = require("minimist");
-const ora = require("ora");
 const contentful = require("contentful-management");
+const parseRegex = require("regex-parser");
 
 /**
  * @param {number} ms
@@ -56,50 +58,95 @@ async function copyEntry(entryId, parents=[]) {
     /** @type contentful.Entry */
     let toEntry;
 
+    for (const fieldId of Object.keys(fromEntryData.fields)) {
+        const field = fromEntryData.fields[fieldId][locale.code];
+
+        if (Array.isArray(field)) {
+            for (const row of field) {
+                if (
+                    row?.sys?.type === "Link" &&
+                    row?.sys?.linkType === "Entry"
+                ) {
+                    const { sys: { id } } = await copyEntry(row?.sys.id, lineage);
+                    row.sys.id = id;
+                }
+
+                if (
+                    row?.sys?.type === "Link" &&
+                    row?.sys?.linkType === "Asset"
+                ) {
+                    const { sys: { id } } = await copyAsset(row?.sys.id, lineage);
+                    row.sys.id = id;
+                }
+            }
+        } else {
+            if (
+                field?.sys?.type === "Link" &&
+                field?.sys?.linkType === "Entry"
+            ) {
+                const { sys: { id } } = await copyEntry(field?.sys.id, lineage);
+                field.sys.id = id;
+            }
+
+            if (
+                field?.sys?.type === "Link" &&
+                field?.sys?.linkType === "Asset"
+            ) {
+                const { sys: { id } } = await copyAsset(field?.sys.id, lineage);
+                field.sys.id = id;
+            }
+        }
+    }
+
+    spinner.start(dedent`
+        ${breadcrumb}
+        ${`\u00a0\u00a0Creating entry...`}
+    `);
+
+    console.log(options);
+
+    if (options.confirmReplace || options.confirmOtherReplace) {
         for (const fieldId of Object.keys(fromEntryData.fields)) {
-            const field = fromEntryData.fields[fieldId][locale.code];
+            for (const localeCode of Object.keys(fromEntryData.fields[fieldId])) {
+                const fieldData = fromEntryData.fields[fieldId][localeCode];
 
-            if (Array.isArray(field)) {
-                for (const row of field) {
-                    if (
-                        row?.sys?.type === "Link" &&
-                        row?.sys?.linkType === "Entry"
-                    ) {
-                        const { sys: { id } } = await copyEntry(row?.sys.id, lineage);
-                        row.sys.id = id;
-                    }
-
-                    if (
-                        row?.sys?.type === "Link" &&
-                        row?.sys?.linkType === "Asset"
-                    ) {
-                        const { sys: { id } } = await copyAsset(row?.sys.id, lineage);
-                        row.sys.id = id;
-                    }
-                }
-            } else {
                 if (
-                    field?.sys?.type === "Link" &&
-                    field?.sys?.linkType === "Entry"
+                    options.confirmReplace &&
+                    options.replacementFields.includes(fieldId) &&
+                    typeof fieldData === 'string'
                 ) {
-                    const { sys: { id } } = await copyEntry(field?.sys.id, lineage);
-                    field.sys.id = id;
+                    fromEntryData.fields[fieldId][localeCode] = R.replace(options.replacementExpression, options.replacementText)(fieldData);
+                    console.log(fieldId, typeof fieldData, fieldData, fromEntryData.fields[fieldId][localeCode]);
                 }
 
                 if (
-                    field?.sys?.type === "Link" &&
-                    field?.sys?.linkType === "Asset"
+                    options.confirmOtherReplace &&
+                    options.otherReplacementFields.includes(fieldId) &&
+                    typeof fieldData === 'string'
                 ) {
-                    const { sys: { id } } = await copyAsset(field?.sys.id, lineage);
-                    field.sys.id = id;
+                    fromEntryData.fields[fieldId][localeCode] = R.replace(options.otherReplacementExpression, options.otherReplacementText)(fieldData);
+                    console.log(fieldId, typeof fieldData, fieldData, fromEntryData.fields[fieldId][localeCode]);
                 }
             }
         }
+    }
 
-        spinner.start(dedent`
-            ${breadcrumb}
-            ${`\u00a0\u00a0Creating entry...`}
-        `);
+// console.log(
+//     R.evolve({
+//         handle: R.map(replace),
+//         name: R.map(replace),
+//         title: R.map(replace),
+//         internalName: R.map(replace),
+//     }, {
+//         handle: { 'en-US': 'it-burnout-index-survey' },
+//         internalName : { 'en-US': 'IT Burnout Index Survey' },
+//         name: { 'en-US': 'IT Burnout Index' },
+//         title: { 'en-US': 'Burnout Index' },
+//         recurringPattern: {
+//           'en-US': { freq: 0, count: 0, dtstart: 'userFirstLogin', dtstartOffset: 0 }
+//         },
+//     })
+// );
 
         toEntry = await toEnvironment.createEntry(
             contentTypeId,
@@ -194,19 +241,27 @@ async function main() {
 
     // @todo pull environment variables
 
-    options = R.map(
-        R.when(RA.isString, R.trim)
+    options = R.compose(
+        // R.map(
+        //     R.when(RA.isString, R.trim),
+        // ),
+        R.evolve({
+            space: R.trim,
+            from: R.trim,
+            to: R.trim,
+            entry: R.trim,
+            accessToken: R.trim,
+            replacementFields: R.split(/\s*,\s*/),
+            replacementExpression: parseRegex,
+            otherReplacementFields: R.split(/\s*,\s*/),
+            otherReplacementExpression: parseRegex,
+        }),
     )(
         await inquirer.prompt(
             [{
-                name: 'accessToken',
-                type: 'input',
-                message: `Using which contentful ${chalk.green('access token')}?`,
-                validate: required,
-            }, {
                 name: 'space',
                 type: 'input',
-                message: `What contentful ${chalk.green('space')}?`,
+                message: `On what contentful ${chalk.green('space')}?`,
                 validate: required,
             }, {
                 name: 'from',
@@ -225,6 +280,60 @@ async function main() {
                 type: 'input',
                 message: `Which contentful ${chalk.green('entry')}?`,
                 validate: required,
+            }, {
+                name: 'accessToken',
+                type: 'input',
+                message: `Using which contentful ${chalk.green('access token')}?`,
+                validate: required,
+            }, {
+                name: 'confirmReplace',
+                type: 'confirm',
+                message: `Execute ${chalk.green('replace')}?`,
+                default: false,
+                validate: required,
+            }, {
+                name: 'replacementFields',
+                type: 'input',
+                message: `Which ${chalk.green('fields')}?`,
+                when: ({ confirmReplace }) => confirmReplace === true,
+                validate: required,
+            }, {
+                name: 'replacementExpression',
+                type: 'input',
+                message: `Matching what ${chalk.green('expression')}?`,
+                when: ({ confirmReplace }) => confirmReplace === true,
+                validate: required,
+            }, {
+                name: 'replacementText',
+                type: 'input',
+                message: `Using which ${chalk.green('text')}?`,
+                when: ({ confirmReplace }) => confirmReplace === true,
+                default: '',
+            }, {
+                name: 'confirmOtherReplace',
+                type: 'confirm',
+                message: `Execute other ${chalk.green('replace')}?`,
+                default: false,
+                when: ({ confirmReplace }) => confirmReplace === true,
+                validate: required,
+            }, {
+                name: 'otherReplacementFields',
+                type: 'input',
+                message: `Which ${chalk.green('fields')}?`,
+                when: ({ confirmOtherReplace }) => confirmOtherReplace === true,
+                validate: required,
+            }, {
+                name: 'otherReplacementExpression',
+                type: 'input',
+                message: `Matching what ${chalk.green('expression')}?`,
+                when: ({ confirmOtherReplace }) => confirmOtherReplace === true,
+                validate: required,
+            }, {
+                name: 'otherReplacementText',
+                type: 'input',
+                message: `Using which ${chalk.green('text')}?`,
+                when: ({ confirmOtherReplace }) => confirmOtherReplace === true,
+                default: '',
             }],
             RA.renameKeys({
                 'access-token': 'accessToken'
