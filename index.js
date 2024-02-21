@@ -9,6 +9,8 @@ const minimist = require("minimist");
 const contentful = require("contentful-management");
 const parseRegex = require("regex-parser");
 
+require('dotenv').config();
+
 /**
  * @param {number} ms
  * @returns {Promise<void>}
@@ -221,7 +223,12 @@ async function main() {
       },
     });
 
-    // @todo pull environment variables
+    env = R.pick([
+        'CONTENTFUL_ACCESS_TOKEN',
+        'CONTENTFUL_SPACE_ID',
+        'CONTENTFUL_FROM_ENVIRONMENT',
+        'CONTENTFUL_TO_ENVIRONMENT',
+    ], process.env);
 
     options = R.compose(
         R.evolve({
@@ -314,9 +321,17 @@ async function main() {
                 when: ({ confirmOtherReplace }) => confirmOtherReplace === true,
                 default: '',
             }],
-            RA.renameKeys({
-                'access-token': 'accessToken'
-            })(args)
+            R.mergeLeft(
+                RA.renameKeys({
+                    'access-token': 'accessToken'
+                })(args),
+                RA.renameKeys({
+                    'CONTENTFUL_ACCESS_TOKEN': 'accessToken',
+                    'CONTENTFUL_SPACE_ID': 'space',
+                    'CONTENTFUL_FROM_ENVIRONMENT': 'from',
+                    'CONTENTFUL_TO_ENVIRONMENT': 'to',
+                })(env),
+            ),
         )
     );
 

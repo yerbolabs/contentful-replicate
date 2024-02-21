@@ -22,7 +22,7 @@
     "chalk": "^4.1.2",
     "contentful-management": "^10.35.6",
     "dedent": "^1.5.1",
-    "dotenv": "^16.4.4",
+    "dotenv": "^16.4.5",
     "inquirer": "^8.2.6",
     "minimist": "^1.2.8",
     "ora": "^5.4.1",
