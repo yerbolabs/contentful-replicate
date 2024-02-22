@@ -19,4 +19,4 @@ npm run start
   -h, --help              Show help                                    [boolean]
 ```
 
-You may also use the `CONTENTFUL_MANAGEMENT_TOKEN` and `CONTENTFUL_SPACE` environment variables to configure the `management-token` and `space` options, respectively
+You may also use the `CONTENTFUL_ACCESS_TOKEN`, `CONTENTFUL_SPACE_ID`, `CONTENTFUL_FROM_ENVIRONMENT` and `CONTENTFUL_TO_ENVIRONMENT` environment variables.

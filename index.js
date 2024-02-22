@@ -104,8 +104,6 @@ async function copyEntry(entryId, parents=[]) {
         ${`\u00a0\u00a0Creating entry...`}
     `);
 
-    console.log(options);
-
     if (options.confirmReplace || options.confirmOtherReplace) {
         for (const fieldId of Object.keys(fromEntryData.fields)) {
             for (const localeCode of Object.keys(fromEntryData.fields[fieldId])) {
