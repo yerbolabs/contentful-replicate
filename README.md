@@ -1,6 +1,6 @@
-# `contentful-copy-entry`
+# Contentful Replicate
 
-Copy Contentful entries (and any linked entries/assets) from one environment to another
+Deep contentful entry replication command-line utility.
 
 ## Command
 

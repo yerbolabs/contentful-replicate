@@ -214,7 +214,9 @@ const required = R.compose(
 async function main() {
     args = minimist(process.argv.slice(2), {
       string: ['access-token', 'space', 'from', 'to', 'entry'],
+      boolean: ['help'],
       alias: {
+        h: 'help',
         a: 'access-token',
         s: 'space',
         f: 'from',
@@ -229,6 +231,21 @@ async function main() {
         'CONTENTFUL_FROM_ENVIRONMENT',
         'CONTENTFUL_TO_ENVIRONMENT',
     ], process.env);
+
+    if (args.help) {
+        console.log(dedent`
+            Deep contentful entry replication command-line utility
+
+            -a, --access-token      Contentful Management API token    [string] [required]
+            -s, --space             Space ID                           [string] [required]
+            -e, --entry             Entry ID                           [string] [required]
+            -f, --from              Copy FROM this environment         [string] [required]
+            -t, --to                Copy TO this environment           [string] [required]
+            -h, --help              Show help                                    [boolean]
+      `);
+
+      process.exit(0);
+    }
 
     options = R.compose(
         R.evolve({
