@@ -115,7 +115,6 @@ async function copyEntry(entryId, parents=[]) {
                     typeof fieldData === 'string'
                 ) {
                     fromEntryData.fields[fieldId][localeCode] = R.replace(options.replacementExpression, options.replacementText)(fieldData);
-                    console.log(fieldId, typeof fieldData, fieldData, fromEntryData.fields[fieldId][localeCode]);
                 }
 
                 if (
@@ -124,7 +123,6 @@ async function copyEntry(entryId, parents=[]) {
                     typeof fieldData === 'string'
                 ) {
                     fromEntryData.fields[fieldId][localeCode] = R.replace(options.otherReplacementExpression, options.otherReplacementText)(fieldData);
-                    console.log(fieldId, typeof fieldData, fieldData, fromEntryData.fields[fieldId][localeCode]);
                 }
             }
         }
